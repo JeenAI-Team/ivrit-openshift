@@ -20,8 +20,8 @@ RUN pip install -r /app/requirements.txt
 USER default
 WORKDIR /app
 
-RUN mkdir /tmp/hg_cache
-ENV HF_HOME="/tmp/hg_cache"
+RUN mkdir /app/hg_cache
+ENV HF_HOME="/app/hg_cache"
 
 RUN python3 -c 'import faster_whisper; m = faster_whisper.WhisperModel("ivrit-ai/faster-whisper-v2-d4")'
 
