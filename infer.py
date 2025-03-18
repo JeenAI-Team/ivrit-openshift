@@ -1,5 +1,5 @@
 import runpod
-
+import os
 import base64
 import faster_whisper
 import tempfile
@@ -74,7 +74,7 @@ def transcribe(job):
     # Get the API key from the job input
     api_key = job['input'].get('api_key', None)
 
-    model = faster_whisper.WhisperModel(model_name, device=device, compute_type='float16')
+    model = faster_whisper.WhisperModel(model_name, device=device, compute_type='float16',download_root=os.environ.get('MODELS_DIR', '/models'))
 
     d = tempfile.mkdtemp()
 
