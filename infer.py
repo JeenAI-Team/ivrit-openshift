@@ -61,8 +61,9 @@ def download_file(url, max_size_bytes, output_filename, api_key=None):
         return False
 
 def transcribe(job):
+    print(f'Starting work on job with input {job['input']}')
     datatype = job['input'].get('type', None)
-    model_name = job['input'].get('model', 'large-v2')
+    model_name = job['input'].get('model', 'ivrit-ai/faster-whisper-v2-d4')
     is_streaming = job['input'].get('streaming', False)
 
     if not datatype:
