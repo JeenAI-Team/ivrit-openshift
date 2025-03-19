@@ -1,22 +1,34 @@
 # Include Python
-from python:3.11.1-buster
+FROM python:3.11.1-buster
 
-# Define your working directory
-WORKDIR /
+USER root
+RUN mkdir /home/default && \
+    useradd default -u 1000 -U -d /home/default && \
+    chown -R 1000:1000 /home/default
+RUN mkdir /models && chown -R 1000:1000 /models
+RUN mkdir /app && chown -R 1000:1000 /app
 
-# Install runpod
-RUN pip install runpod
-RUN pip install torch==2.3.1
-RUN pip install faster-whisper
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install vim -y
 
-RUN python3 -c 'import faster_whisper; m = faster_whisper.WhisperModel("ivrit-ai/whisper-large-v3-ct2")'
-RUN python3 -c 'import faster_whisper; m = faster_whisper.WhisperModel("ivrit-ai/whisper-large-v3-turbo-ct2")'
+COPY requirements.txt /app/requirements.txt
 
-# Add your file
+RUN pip install -r /app/requirements.txt
+
+USER default
+WORKDIR /app
+
+RUN mkdir /app/hg_cache
+ENV HF_HOME="/app/hg_cache"
+
+ENV PORT=8000
+ENV HOST="0.0.0.0"
+ENV SERVE_AS_API="1"
 ADD infer.py .
 
 ENV LD_LIBRARY_PATH="/usr/local/lib/python3.11/site-packages/nvidia/cudnn/lib:/usr/local/lib/python3.11/site-packages/nvidia/cublas/lib"
 
-# Call your file when your container starts
-CMD [ "python", "-u", "/infer.py" ]
+RUN python -c 'import faster_whisper; m = faster_whisper.WhisperModel("systran/faster-whisper-large-v2")'
+RUN python -c 'import faster_whisper; m = faster_whisper.WhisperModel("ivrit-ai/faster-whisper-v2-d4")'
 
+CMD ["/bin/sh", "-c", "python infer.py --rp_serve_api --rp_api_host $HOST --rp_api_port $PORT"]
